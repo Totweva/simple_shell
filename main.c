@@ -1,12 +1,19 @@
 #include "main.h"
 
+
+/**
+ * handle_exec - a function that creates a child process and checks for error
+ * @argc: command arguments passed to the child process
+ * Return: if sucessful
+ */
+
 void handle_exec(char **args)
 {
 	int status;
 	pid_t pid = fork();
 
 	if (pid == 0)
-	 {
+	{
 		if (execve(*args, args, NULL) < 0)
 			perror("Error");
 		exit(EXIT_FAILURE);
@@ -17,14 +24,14 @@ void handle_exec(char **args)
 	}
 	else
 	{
-		do
-		{
+		do {
 			wait(&status);
-		}
-		while (!WIFEXITED(status) && !WIFSIGNALED(status));
+		} while (!WIFEXITED(status) && !WIFSIGNALED(status));
 	}
 	return;
 }
+
+
 
 int handle_input(char *str)
 {
@@ -85,7 +92,7 @@ int process_str(char *str, char **args)
 	return (0);
 }
 
-int main()
+int main(void)
 {
 	char *input;
 	char **args = malloc(sizeof(char) * MAXLIST);

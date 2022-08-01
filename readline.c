@@ -1,11 +1,12 @@
 #include "main.h"
 
+
 char *read_line()
 {
 	int bufsize = MAXCHAR;
 	int i = 0, c;
 	char *buf = malloc(sizeof(char) * bufsize);
-	
+
 	if (!buf)
 	{
 		perror("allocation error");
@@ -15,18 +16,17 @@ char *read_line()
 	while (1)
 	{
 		c = getchar();
-		
 		if (c == EOF || c == '\n')
 		{
 			buf[i] = '\0';
-			return buf;
+			return (buf);
 		}
 		else
 		{
 			buf[i] = c;
 		}
 		i++;
-		
+
 		if (i >= bufsize)
 		{
 			bufsize += MAXCHAR;
