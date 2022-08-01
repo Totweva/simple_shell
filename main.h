@@ -10,6 +10,8 @@
 #define MAXCHAR 1000 /* maximum characters suppoted */
 #define MAXLIST 100 /* max comands supported */
 
+extern char **environ;
+
 char *read_line();
 
 #endif /* MAIN_H */
