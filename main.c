@@ -2,24 +2,28 @@
 
 void handle_exec(char **args)
 {
+	int status;
 	pid_t pid = fork();
 
-	if (pid == -1)
-	{
-		perror("Error");
-		return;
-	}
-	else if (pid == 0)
+	if (pid == 0)
 	 {
 		if (execve(*args, args, NULL) < 0)
 			perror("Error");
-		exit(0);
+		exit(EXIT_FAILURE);
+	}
+	else if (pid < 0)
+	{
+		perror("Error");
 	}
 	else
 	{
-		wait(NULL);
-		return;
+		do
+		{
+			wait(&status);
+		}
+		while (!WIFEXITED(status) && !WIFSIGNALED(status));
 	}
+	return;
 }
 
 int handle_input(char *str)
@@ -37,8 +41,33 @@ int handle_input(char *str)
 
 void parse_space(char *str, char **args)
 {
+	int bufsize = MAXLIST;
+	char *token;
 	int i;
+	int tok_len;
 
+	i = 0;
+	token = strtok(str, " ");
+	while (token)
+	{
+		args[i] = token;
+		i++;
+
+		if (i >= bufsize)
+		{
+			bufsize += MAXLIST;
+			args = realloc(args, bufsize * sizeof(char));
+			if (!args)
+			{
+				perror("allocation error");
+				exit(EXIT_FAILURE);
+			}
+		}
+		token = strtok(NULL, " ");
+	}
+	args[i] = NULL;
+
+	/*
 	for (i = 0; i < MAXLIST; i++)
 	{
 		args[i] = strsep(&str, " ");
@@ -47,6 +76,7 @@ void parse_space(char *str, char **args)
 		if (strlen(args[i]) == 0)
 			i--;
 	}
+	*/
 }
 
 int process_str(char *str, char **args)
@@ -57,16 +87,32 @@ int process_str(char *str, char **args)
 
 int main()
 {
-	char input[MAXCHAR], *args[MAXLIST];
+	char *input;
+	char **args = malloc(sizeof(char) * MAXLIST);
+
+	if (!args)
+	{
+		perror("allocation error");
+		exit(EXIT_FAILURE);
+	}
 
 	while (1)
 	{
+		input = malloc(sizeof(char) * MAXCHAR);
+		if (!input)
+		{
+			perror("error");
+			return (-1);
+		}
 		write(1, "$ ", 2);
 		if (handle_input(input))
 			continue;
 
 		process_str(input, args);
 		handle_exec(args);
+
+		free(input);
+		free(args);
 	}
 	return (0);
 }
