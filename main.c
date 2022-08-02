@@ -1,26 +1,89 @@
 #include "main.h"
 
+/**
+ * get_env_value - get value of environment variable
+ * @str: string
+ *
+ * Return: pointer to value
+ */
+char *get_env_value(char *str)
+{
+	char *token;
+	char *new_str, *delim = "=";
+
+	new_str = _strcpy(new_str, str);
+
+	token = strtok(new_str, delim);
+	if (token)
+	{
+		token = strtok(NULL, delim);
+		return (token);
+	}
+	return (NULL);
+}
 
 /**
- * handle_exec - a function that creates a child process and checks for error
- * @argc: command arguments passed to the child process
- * Return: if sucessful
+ * get_exec_path - get executable path
+ * @args: pointer to arguments
+ *
+ * Return: path to executable or NULL
  */
+char *get_exec_path(char **args)
+{
+	char **path = NULL, *delim = ":", *path_value;
+	size_t index = 0;
+	char *cwd = getcwd(NULL, 0);
+	struct stat sb;
+	char **dirs = malloc(MAXLIST);
 
+	path = _getenv("PATH");
+	if (!dirs || !path)
+		return (NULL);
+	path_value = get_env_value(*path);
+	_strtok(path_value, dirs, delim);
+	while (dirs[index])
+	{
+		chdir(dirs[index]);
+		if (stat(args[0], &sb) == 0)
+		{
+			dirs[index] = _strcat(dirs[index], "/");
+			args[0] = _strcat(dirs[index], args[0]);
+			break;
+		}
+		index++;
+	}
+	chdir(cwd);
+	free(dirs);
+	return args[0];
+}
+
+/**
+ * handle_exec - executes arguments
+ * @args: pointer to arguments
+ */
 void handle_exec(char **args)
 {
 	int status;
-	pid_t pid = fork();
+	char *arg;
+	pid_t pid;
+
+	arg = get_exec_path(args);
+	if (!arg)
+	{
+		perror("error");
+		return;
+	}
+	pid = fork();
 
 	if (pid == 0)
 	{
-		if (execve(*args, args, NULL) < 0)
-			perror("Error");
-		exit(EXIT_FAILURE);
+		if (execve(args[0], args, NULL) < 0)
+			perror("error");
+		exit(EXIT_SUCCESS);
 	}
 	else if (pid < 0)
 	{
-		perror("Error");
+		perror("error");
 	}
 	else
 	{
@@ -31,94 +94,123 @@ void handle_exec(char **args)
 	return;
 }
 
-
-
-int handle_input(char *str)
+/**
+ * prompt - prompts the USer
+ */
+void prompt()
 {
-	size_t n = 10;
-	char *buf = read_line();
+	write(1, "$ ", 2);
+}
 
-	if (strlen(buf) != 0)
+/**
+ * handle_input
+ * @buf: pointer to buffer
+ * @bufsize: buffer size
+ *
+ * Return: 0 always
+ */
+int handle_input(char *buf)
+{
+	size_t bufsize = MAXCHAR;
+	size_t index = 0;
+	int input = getline(&buf, &bufsize, stdin);
+
+	if (input < 0)
 	{
-		strcpy(str, buf);
+		perror("couldn't get line");
+		return (-1);
 	}
-	free(buf);
+	while (buf[index] != '\0' || buf[index] != EOF || buf[index] != '\n')
+	{
+		if (buf[index] == EOF || buf[index] == '\n')
+		{
+			buf[index] = '\0';
+			return (0);
+		}
+		index++;
+	}
+
 	return (0);
 }
 
-void parse_space(char *str, char **args)
+/**
+ * _strtok - splits a string and stores values in an array
+ * @buf: buffer
+ * @args: pointer to malloced array
+ * @delim: delimeter
+ */
+void _strtok(char *buf, char **args, char *delim)
 {
 	int bufsize = MAXLIST;
 	char *token;
-	int i;
-	int tok_len;
+	int index = 0;
 
-	i = 0;
-	token = strtok(str, " ");
+	token = strtok(buf, delim);
 	while (token)
 	{
-		args[i] = token;
-		i++;
+		args[index] = _strdup(token);
+		index++;
 
-		if (i >= bufsize)
+		if (index >= bufsize)
 		{
 			bufsize += MAXLIST;
-			args = realloc(args, bufsize * sizeof(char));
+			args = realloc(args, bufsize);
 			if (!args)
 			{
 				perror("allocation error");
 				exit(EXIT_FAILURE);
 			}
 		}
-		token = strtok(NULL, " ");
+		token = strtok(NULL, delim);
 	}
-	args[i] = NULL;
-
-	/*
-	for (i = 0; i < MAXLIST; i++)
-	{
-		args[i] = strsep(&str, " ");
-		if (!args[i])
-			break;
-		if (strlen(args[i]) == 0)
-			i--;
-	}
-	*/
+	args[index] = NULL;
 }
 
+/**
+ * process_str - process the input from user
+ * @str: string
+ * %args: pointer to malloced array
+ *
+ * Return: 0 always
+ */
 int process_str(char *str, char **args)
 {
-	parse_space(str, args);
+	if (_strlen(str) == 0)
+		return (-1);
+
+	_strtok(str, args, " ");
 	return (0);
 }
 
-int main(void)
+/***
+ * main - Entry to SHELL
+ *
+ * Return: 0 always
+ */
+int main()
 {
-	char *input;
-	char **args = malloc(sizeof(char) * MAXLIST);
+	size_t bufsize = MAXCHAR;
+	char *buf;
+	char **args = malloc(MAXLIST);
 
-	if (!args)
+	while(1)
 	{
-		perror("allocation error");
-		exit(EXIT_FAILURE);
-	}
-
-	while (1)
-	{
-		input = malloc(sizeof(char) * MAXCHAR);
-		if (!input)
+		buf = malloc(bufsize);
+		if (!buf)
 		{
-			perror("error");
+			perror("Allocation error");
 			return (-1);
 		}
-		write(1, "$ ", 2);
-		if (handle_input(input))
+		prompt();
+		if (handle_input(buf))
 			continue;
 
-		process_str(input, args);
+		printf("%s\n", buf);
+		if (process_str(buf, args) < 0)
+			continue;
+		printf("%s\n", args[0]);
 		handle_exec(args);
-
-		free(input);
+		free(buf);
 		free(args);
 	}
 	return (0);

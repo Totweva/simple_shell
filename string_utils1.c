@@ -102,3 +102,19 @@ int _strncmp(const char *s1, const char *s2, size_t n)
 	else
 		return (-15);
 }
+
+/**
+ * _strdup - duplicate string
+ * @str: string to be duplicated
+ *
+ * Return: new address
+ */
+char *_strdup(char *str)
+{
+	int len = _strlen(str) + 1;
+	char *output = malloc(len + 1);
+	if (!output)
+		return NULL;
+	output = _strcpy(output, str);
+	return (output);
+}
