@@ -11,7 +11,7 @@ char *get_env_value(char *str)
 	char *token;
 	char *new_str, *delim = "=";
 
-	new_str = _strcpy(new_str, str);
+	new_str = _strdup(str);
 
 	token = strtok(new_str, delim);
 	if (token)
@@ -34,7 +34,7 @@ char *get_exec_path(char **args)
 	size_t index = 0;
 	char *cwd = getcwd(NULL, 0);
 	struct stat sb;
-	char **dirs = malloc(MAXLIST);
+	char **dirs = malloc(sizeof(char) * MAXLIST);
 
 	path = _getenv("PATH");
 	if (!dirs || !path)
@@ -191,12 +191,13 @@ int main()
 {
 	size_t bufsize = MAXCHAR;
 	char *buf;
-	char **args = malloc(MAXLIST);
+	char **args;
 
 	while(1)
 	{
+		args = malloc(MAXLIST);
 		buf = malloc(bufsize);
-		if (!buf)
+		if (!buf || !args)
 		{
 			perror("Allocation error");
 			return (-1);
@@ -205,10 +206,8 @@ int main()
 		if (handle_input(buf))
 			continue;
 
-		printf("%s\n", buf);
 		if (process_str(buf, args) < 0)
 			continue;
-		printf("%s\n", args[0]);
 		handle_exec(args);
 		free(buf);
 		free(args);
