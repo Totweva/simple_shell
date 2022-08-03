@@ -1,64 +1,6 @@
 #include "main.h"
 
 /**
- * get_env_value - get value of environment variable
- * @str: string
- *
- * Return: pointer to value
- */
-char *get_env_value(char *str)
-{
-	char *token;
-	char *new_str, *delim = "=";
-
-	new_str = _strdup(str);
-
-	token = strtok(new_str, delim);
-	if (token)
-	{
-		token = strtok(NULL, delim);
-		return (token);
-	}
-	free(new_str);
-	return (NULL);
-}
-
-/**
- * get_exec_path - get executable path
- * @args: pointer to arguments
- *
- *Return: path to executable or NULL
- */
-char *get_exec_path(char **args)
-{
-	char **path = NULL, *delim = ":", *path_value;
-	size_t index = 0;
-	char *cwd = getcwd(NULL, 0);
-	struct stat sb;
-	char **dirs = malloc(sizeof(char) * MAXLIST);
-
-	path = _getenv("PATH");
-	if (!dirs || !path)
-		return (NULL);
-	path_value = get_env_value(*path);
-	_strtok(path_value, dirs, delim);
-	while (dirs[index])
-	{
-		chdir(dirs[index]);
-		if (stat(args[0], &sb) == 0)
-		{
-			dirs[index] = _strcat(dirs[index], "/");
-			args[0] = _strcat(dirs[index], args[0]);
-			break;
-		}
-		index++;
-	}
-	chdir(cwd);
-	free(dirs);
-	return (args[0]);
-}
-
-/**
  * handle_exec - executes arguments
  * @args: pointer to arguments
  */
@@ -92,7 +34,6 @@ void handle_exec(char **args)
 			wait(&status);
 		} while (!WIFEXITED(status) && !WIFSIGNALED(status));
 	}
-	return;
 }
 
 /**
@@ -104,9 +45,8 @@ void prompt(void)
 }
 
 /**
- * handle_input
+ * handle_input - handle user input stored in buffer
  * @buf: pointer to buffer
- * @bufsize: buffer size
  *
  * Return: 0 always
  */
@@ -135,42 +75,9 @@ int handle_input(char *buf)
 }
 
 /**
- * _strtok - splits a string and stores values in an array
- * @buf: buffer
- * @args: pointer to malloced array
- * @delim: delimeter
- */
-void _strtok(char *buf, char **args, char *delim)
-{
-	int bufsize = MAXLIST;
-	char *token;
-	int index = 0;
-
-	token = strtok(buf, delim);
-	while (token)
-	{
-		args[index] = _strdup(token);
-		index++;
-
-		if (index >= bufsize)
-		{
-			bufsize += MAXLIST;
-			args = realloc(args, bufsize);
-			if (!args)
-			{
-				perror("allocation error");
-				exit(EXIT_FAILURE);
-			}
-		}
-		token = strtok(NULL, delim);
-	}
-	args[index] = NULL;
-}
-
-/**
  * process_str - process the input from user
  * @str: string
- * %args: pointer to malloced array
+ * @args: pointer to malloced array
  *
  * Return: 0 always
  */
@@ -183,7 +90,7 @@ int process_str(char *str, char **args)
 	return (0);
 }
 
-/***
+/**
  * main - Entry to SHELL
  *
  * Return: 0 always

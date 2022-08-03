@@ -13,8 +13,6 @@
 
 extern char **environ;
 
-char *read_line();
-
 /*string function utilities */
 int _strlen(const char *s);
 char *_strcat(char *dest, const char *src);
@@ -28,10 +26,16 @@ char *_strdup(char *str);
 
 /* environ function utilities */
 char **_getenv(const char *str);
+char *get_env_value(char *str);
 
 /* helper functions */
 void free_args(char **args);
 
 void _strtok(char *str, char **args, char *delim);
+char *get_exec_path(char **args);
+void handle_exec(char **args);
+void prompt(void);
+int handle_input(char *buf);
+int process_str(char *str, char **args);
 
 #endif /* MAIN_H */
