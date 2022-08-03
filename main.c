@@ -26,7 +26,7 @@ char *get_env_value(char *str)
  * get_exec_path - get executable path
  * @args: pointer to arguments
  *
- * Return: path to executable or NULL
+ *Return: path to executable or NULL
  */
 char *get_exec_path(char **args)
 {
@@ -54,7 +54,7 @@ char *get_exec_path(char **args)
 	}
 	chdir(cwd);
 	free(dirs);
-	return args[0];
+	return (args[0]);
 }
 
 /**
@@ -97,7 +97,7 @@ void handle_exec(char **args)
 /**
  * prompt - prompts the USer
  */
-void prompt()
+void prompt(void)
 {
 	write(1, "$ ", 2);
 }
@@ -187,13 +187,13 @@ int process_str(char *str, char **args)
  *
  * Return: 0 always
  */
-int main()
+int main(void)
 {
 	size_t bufsize = MAXCHAR;
 	char *buf;
 	char **args = malloc(MAXLIST);
 
-	while(1)
+	while (1)
 	{
 		buf = malloc(bufsize);
 		if (!buf)
