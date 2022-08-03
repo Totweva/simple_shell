@@ -19,6 +19,7 @@ char *get_env_value(char *str)
 		token = strtok(NULL, delim);
 		return (token);
 	}
+	free(new_str);
 	return (NULL);
 }
 
