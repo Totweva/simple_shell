@@ -113,8 +113,9 @@ char *_strdup(char *str)
 {
 	int len = _strlen(str) + 1;
 	char *output = malloc(len + 1);
+
 	if (!output)
-		return NULL;
+		return (NULL);
 	output = _strcpy(output, str);
 	return (output);
 }
