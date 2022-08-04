@@ -26,7 +26,7 @@ char *get_exec_path(char **args)
 		{
 			dirs[index] = _strcat(dirs[index], "/");
 			args[0] = _strcat(dirs[index], args[0]);
-i			break;
+			break;
 		}
 		index++;
 	}

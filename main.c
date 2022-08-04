@@ -110,7 +110,8 @@ int main(void)
 			perror("Allocation error");
 			return (-1);
 		}
-		prompt();
+		if (isatty(0))
+			prompt();
 		if (handle_input(buf))
 			continue;
 
@@ -119,6 +120,8 @@ int main(void)
 		handle_exec(args);
 		free(buf);
 		free(args);
+		if (!isatty(0))
+			return (0);
 	}
 	return (0);
 }
