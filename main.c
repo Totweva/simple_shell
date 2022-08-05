@@ -6,10 +6,25 @@
  */
 void handle_exec(char **args)
 {
-	int status;
+	int status, index;
 	char *arg;
 	pid_t pid;
+	builtin_t funcs[] = {
+		{"exit", simpsh_exit},
+		{"env", simpsh_env},
+		{NULL, NULL}
+	};
 
+	/* check if the first argument is a builtin */
+	for (index = 0; funcs[index].name; index++)
+	{
+		if (_strcmp(funcs[index].name, args[0]) == 0)
+			break;
+	}
+	if (funcs[index].f)
+		funcs[index].f(args);
+	
+	/* if it isn't a builtin find path to executable */
 	arg = get_exec_path(args);
 	if (!arg)
 	{
@@ -117,8 +132,8 @@ int main(void)
 
 		if (process_str(buf, args) < 0)
 			continue;
-		handle_exec(args);
 		free(buf);
+		handle_exec(args);
 		free(args);
 		if (!isatty(0))
 			return (0);

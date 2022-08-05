@@ -10,8 +10,20 @@
 
 #define MAXCHAR 1000 /* maximum characters suppoted */
 #define MAXLIST 100 /* max comands supported */
+#define UNUSED(x) (void)(x)
 
 extern char **environ;
+
+/**
+ * struct Builtins - Struct for defining builtin commands.
+ * @name: The name of the builtin command.
+ * @f: A function pointer to the builtin command's function.
+ */
+typedef struct Builtins
+{
+	char *name;
+	int (*f)(char **argv);
+} builtin_t;
 
 /*string function utilities */
 int _strlen(const char *s);
@@ -23,6 +35,11 @@ int _strspn(char *s, char *accept);
 int _strcmp(char *s1, char *s2);
 int _strncmp(const char *s1, const char *s2, size_t n);
 char *_strdup(char *str);
+
+/* builtin utils */
+int (*get_builtin(char *command))(char **args);
+int simpsh_exit(char **args);
+int simpsh_env(char **args);
 
 /* environ function utilities */
 char **_getenv(const char *str);
