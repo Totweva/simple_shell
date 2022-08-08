@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <signal.h>
 
 #define MAXCHAR 1000 /* maximum characters suppoted */
 #define MAXLIST 100 /* max comands supported */

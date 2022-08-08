@@ -1,6 +1,19 @@
 #include "main.h"
 
 /**
+ * sigHandler - prompts the shell upon a signal
+ * @sig_input: the signal
+ */
+void sigHandler(int sig_input)
+{
+	char *new_prompt = "\n$ ";
+
+	(void)sig_input;
+	signal(SIGINT, sigHandler);
+	write(STDIN_FILENO, new_prompt, 3);
+}
+
+/**
  * handle_exec - executes arguments
  * @args: pointer to arguments
  */
@@ -53,11 +66,11 @@ void handle_exec(char **args)
 
 /**
  * prompt - prompts the USer
- */
+
 void prompt(void)
 {
 	write(1, "$ ", 2);
-}
+}*/
 
 /**
  * handle_input - handle user input stored in buffer
@@ -115,6 +128,9 @@ int main(void)
 	size_t bufsize = MAXCHAR;
 	char *buf;
 	char **args;
+	char *prompt = "$ ", *new_line = "\n";
+
+	signal(SIGINT, sigHandler);
 
 	while (1)
 	{
@@ -126,7 +142,7 @@ int main(void)
 			return (-1);
 		}
 		if (isatty(0))
-			prompt();
+			prompt;
 		if (handle_input(buf))
 			continue;
 
