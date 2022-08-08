@@ -1,42 +1,20 @@
 #include "main.h"
 
 /**
- * sigHandler - prompts the shell upon a signal
- * @sig_input: the signal
- */
-void sigHandler(int sig_input)
-{
-	char *new_prompt = "\n$ ";
-
-	(void)sig_input;
-	signal(SIGINT, sigHandler);
-	write(STDIN_FILENO, new_prompt, 3);
-}
-
-/**
  * handle_exec - executes arguments
  * @args: pointer to arguments
  */
 void handle_exec(char **args)
 {
-	int status, index;
+	int status, (*builtin_func_ptr)(char **);
 	char *arg;
 	pid_t pid;
-	builtin_t funcs[] = {
-		{"exit", simpsh_exit},
-		{"env", simpsh_env},
-		{NULL, NULL}
-	};
 
-	/* check if the first argument is a builtin */
-	for (index = 0; funcs[index].name; index++)
-	{
-		if (_strcmp(funcs[index].name, args[0]) == 0)
-			break;
-	}
-	if (funcs[index].f)
-		funcs[index].f(args);
-	
+	builtin_func_ptr = get_builtin(args[0]);
+
+	if (builtin_func_ptr)
+		builtin_func_ptr(args);
+
 	/* if it isn't a builtin find path to executable */
 	arg = get_exec_path(args);
 	if (!arg)
@@ -66,11 +44,11 @@ void handle_exec(char **args)
 
 /**
  * prompt - prompts the USer
-
+ */
 void prompt(void)
 {
-	write(1, "$ ", 2);
-}*/
+	write(STDIN_FILENO, "$ ", 2);
+}
 
 /**
  * handle_input - handle user input stored in buffer
@@ -128,7 +106,6 @@ int main(void)
 	size_t bufsize = MAXCHAR;
 	char *buf;
 	char **args;
-	char *prompt = "$ ", *new_line = "\n";
 
 	signal(SIGINT, sigHandler);
 
@@ -142,7 +119,7 @@ int main(void)
 			return (-1);
 		}
 		if (isatty(0))
-			prompt;
+			prompt();
 		if (handle_input(buf))
 			continue;
 

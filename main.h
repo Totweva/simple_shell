@@ -55,5 +55,6 @@ void handle_exec(char **args);
 void prompt(void);
 int handle_input(char *buf);
 int process_str(char *str, char **args);
+void sigHandler(int sig_input);
 
 #endif /* MAIN_H */
