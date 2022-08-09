@@ -9,7 +9,7 @@ void sigHandler(int sig_input)
 {
 	char *new_prompt = "\n$ ";
 
-	(void)sig_input;
+	UNUSED(sig_input);
 	signal(SIGINT, sigHandler);
 	write(STDIN_FILENO, new_prompt, 3);
 }

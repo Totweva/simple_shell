@@ -11,7 +11,7 @@ int (*get_builtin(char *command))(char **args)
 {
 	builtin_t funcs[] = {
 		{ "exit", simpsh_exit },
-		/* { "env", shellby_env }, */
+		{ "env", simpsh_env },
 		{ NULL, NULL }
 	};
 	int i;
