@@ -14,6 +14,8 @@
 #define UNUSED(x) (void)(x)
 
 extern char **environ;
+char *prog_name;
+int hist;
 
 /**
  * struct Builtins - Struct for defining builtin commands.

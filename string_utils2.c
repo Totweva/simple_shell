@@ -32,4 +32,3 @@ void _strtok(char *buf, char **args, char *delim)
 	}
 	args[index] = NULL;
 }
-

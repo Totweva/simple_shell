@@ -26,9 +26,10 @@ void handle_exec(char **args)
 
 	if (pid == 0)
 	{
-		if (execve(args[0], args, NULL) < 0)
+		if (execve(args[0], args, environ) < 0)
 			perror("error");
-		exit(EXIT_SUCCESS);
+		free(args);
+		_exit(EXIT_SUCCESS);
 	}
 	else if (pid < 0)
 	{
@@ -98,17 +99,25 @@ int process_str(char *str, char **args)
 
 /**
  * main - Entry to SHELL
+ * @argc: number of arguments
+ * @argv: array of arguments
  *
  * Return: 0 always
  */
-int main(void)
+int main(int argc, char *argv[])
 {
 	size_t bufsize = MAXCHAR;
 	char *buf;
 	char **args;
 
+	prog_name = argv[0];
+	hist = 1;
 	signal(SIGINT, sigHandler);
 
+	if (argc != 1)
+	{
+		return(0);
+	}
 	while (1)
 	{
 		args = malloc(MAXLIST);
