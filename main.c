@@ -1,128 +1,132 @@
 #include "main.h"
 
 /**
- * handle_exec - executes arguments
- * @args: pointer to arguments
+ * sig_handler - Prints a new prompt upon a signal.
+ * @sig: signal.
  */
-void handle_exec(char **args)
+void sig_handler(int sig)
 {
-	int status, (*builtin_func_ptr)(char **);
-	char *arg;
-	pid_t pid;
+	char *new_prompt = "\n$ ";
 
-	builtin_func_ptr = get_builtin(args[0]);
+	UNUSED(sig);
+	signal(SIGINT, sig_handler);
+	write(STDIN_FILENO, new_prompt, 3);
+}
 
-	if (builtin_func_ptr)
-		builtin_func_ptr(args);
+/**
+ * execute - Executes a command in a child process.
+ * @args: An array of arguments.
+ * @front: A double pointer to the beginning of args.
+ *
+ * Return: If an error occurs - a corresponding error code.
+ *         O/w - The exit value of the last executed command.
+ */
+int execute(char **args, char **front)
+{
+	pid_t child_pid;
+	int status, flag = 0, ret = 0;
+	char *command = args[0];
 
-	/* if it isn't a builtin find path to executable */
-	arg = get_exec_path(args);
-	if (!arg)
+	if (command[0] != '/' && command[0] != '.')
 	{
-		perror("error");
-		return;
+		flag = 1;
+		command = get_location(command);
 	}
-	pid = fork();
 
-	if (pid == 0)
+	if (!command || (access(command, F_OK) == -1))
 	{
-		if (execve(args[0], args, environ) < 0)
-			perror("error");
-		free_args(args);
-		_exit(EXIT_SUCCESS);
-	}
-	else if (pid < 0)
-	{
-		perror("error");
+		if (errno == EACCES)
+			ret = (raise_error(args, 126));
+		else
+			ret = (raise_error(args, 127));
 	}
 	else
 	{
-		do {
-			wait(&status);
-		} while (!WIFEXITED(status) && !WIFSIGNALED(status));
-	}
-}
-
-/**
- * prompt - prompts the USer
- */
-void prompt(void)
-{
-	write(STDIN_FILENO, "$ ", 2);
-}
-
-/**
- * handle_input - handle user input stored in buffer
- * @buf: pointer to buffer
- *
- * Return: 0 always
- */
-int handle_input(char *buf)
-{
-	size_t bufsize = MAXCHAR;
-	size_t index = 0;
-	int input = getline(&buf, &bufsize, stdin);
-
-	if (input < 0)
-	{
-		perror("couldn't get line");
-		return (-1);
-	}
-	while (buf[index] != '\0' || buf[index] != EOF || buf[index] != '\n')
-	{
-		if (buf[index] == EOF || buf[index] == '\n')
+		child_pid = fork();
+		if (child_pid == -1)
 		{
-			buf[index] = '\0';
-			return (0);
+			if (flag)
+				free(command);
+			perror("Error child:");
+			return (1);
 		}
-		index++;
+		if (child_pid == 0)
+		{
+			execve(command, args, environ);
+			if (errno == EACCES)
+				ret = (raise_error(args, 126));
+			free_env();
+			free_args(args, front);
+			free_alias_list(aliases);
+			_exit(ret);
+		}
+		else
+		{
+			wait(&status);
+			ret = WEXITSTATUS(status);
+		}
 	}
-
-	return (0);
+	if (flag)
+		free(command);
+	return (ret);
 }
 
 /**
- * main - Entry to SHELL
- * @argc: number of arguments
- * @argv: array of arguments
+ * main - Runs a simple UNIX shell.
+ * @argc: number of arguments.
+ * @argv: An array of pointers to the arguments.
  *
- * Return: 0 always
+ * Return: The return value of the last executed command.
  */
 int main(int argc, char *argv[])
 {
-	size_t bufsize = MAXCHAR;
-	char *buf;
-	char **args;
+	int ret = 0, retn;
+	int *exe_ret = &retn;
+	char *prompt = "$ ", *new_line = "\n";
 
 	prog_name = argv[0];
 	hist = 1;
-	signal(SIGINT, sigHandler);
+	aliases = NULL;
+	signal(SIGINT, sig_handler);
+
+	*exe_ret = 0;
+	environ = _copyenv();
+	if (!environ)
+		exit(-100);
 
 	if (argc != 1)
 	{
-		return (0);
+		ret = proc_file_commands(argv[1], exe_ret);
+		free_env();
+		free_alias_list(aliases);
+		return (*exe_ret);
 	}
+
+	if (!isatty(STDIN_FILENO))
+	{
+		while (ret != END_OF_FILE && ret != EXIT)
+			ret = handle_args(exe_ret);
+		free_env();
+		free_alias_list(aliases);
+		return (*exe_ret);
+	}
+
 	while (1)
 	{
-		args = malloc(MAXLIST);
-		buf = malloc(bufsize);
-		if (!buf || !args)
+		write(STDOUT_FILENO, prompt, 2);
+		ret = handle_args(exe_ret);
+		if (ret == END_OF_FILE || ret == EXIT)
 		{
-			perror("Allocation error");
-			return (-1);
+			if (ret == END_OF_FILE)
+				write(STDOUT_FILENO, new_line, 1);
+			free_env();
+			free_alias_list(aliases);
+			exit(*exe_ret);
 		}
-		if (isatty(0))
-			prompt();
-		if (handle_input(buf))
-			continue;
-
-		if (process_args(buf, args, ' ') < 0)
-			continue;
-		free(buf);
-		handle_exec(args);
-		free_args(args);
-		if (!isatty(0))
-			return (0);
 	}
-	return (0);
+
+	free_env();
+	free_alias_list(aliases);
+	return (*exe_ret);
 }
+
