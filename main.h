@@ -13,9 +13,11 @@
 #define MAXLIST 100 /* max comands supported */
 #define UNUSED(x) (void)(x)
 
-extern char **environ;
-char *prog_name;
-int hist;
+/*
+ * extern char **environ;
+ * char *prog_name;
+ * int hist;
+*/
 
 /**
  * struct Builtins - Struct for defining builtin commands.
@@ -52,7 +54,7 @@ char *get_env_value(char *str);
 void free_args(char **args);
 
 int process_args(char *buf, char **args, char delim);
-ssize_t _getline(char **lineptr, size_t *n, FILE *stream);
+void _getline(char *buf, FILE *stream);
 void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
 char *_strtok(char *str, char delim);
 char *get_exec_path(char **args);
