@@ -1,7 +1,7 @@
 #include "main.h"
 
 /**
- * _handle_args - splits a string and stores values in an array
+ * process_args - splits a string and stores values in an array
  * @buf: buffer
  * @args: pointer to malloced array
  * @delim: delimeter
