@@ -26,9 +26,10 @@ void handle_exec(char **args)
 
 	if (pid == 0)
 	{
-		if (execve(args[0], args, NULL) < 0)
+		if (execve(args[0], args, environ) < 0)
 			perror("error");
-		exit(EXIT_SUCCESS);
+		free_args(args);
+		_exit(EXIT_SUCCESS);
 	}
 	else if (pid < 0)
 	{
@@ -81,34 +82,26 @@ int handle_input(char *buf)
 }
 
 /**
- * process_str - process the input from user
- * @str: string
- * @args: pointer to malloced array
- *
- * Return: 0 always
- */
-int process_str(char *str, char **args)
-{
-	if (_strlen(str) == 0)
-		return (-1);
-
-	_strtok(str, args, " ");
-	return (0);
-}
-
-/**
  * main - Entry to SHELL
+ * @argc: number of arguments
+ * @argv: array of arguments
  *
  * Return: 0 always
  */
-int main(void)
+int main(int argc, char *argv[])
 {
 	size_t bufsize = MAXCHAR;
 	char *buf;
 	char **args;
 
+	prog_name = argv[0];
+	hist = 1;
 	signal(SIGINT, sigHandler);
 
+	if (argc != 1)
+	{
+		return (0);
+	}
 	while (1)
 	{
 		args = malloc(MAXLIST);
@@ -123,11 +116,11 @@ int main(void)
 		if (handle_input(buf))
 			continue;
 
-		if (process_str(buf, args) < 0)
+		if (process_args(buf, args, ' ') < 0)
 			continue;
 		free(buf);
 		handle_exec(args);
-		free(args);
+		free_args(args);
 		if (!isatty(0))
 			return (0);
 	}

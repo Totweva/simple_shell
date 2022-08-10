@@ -8,8 +8,9 @@ void free_args(char **args)
 {
 	size_t i;
 
-	for (i = 0; args[i] || args[i + 1]; i++)
+	for (i = 0; args[i]; i++)
 	{
 		free(args[i]);
 	}
+	free(args);
 }

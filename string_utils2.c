@@ -1,35 +1,41 @@
 #include "main.h"
 
 /**
- * _strtok - splits a string and stores values in an array
- * @buf: buffer
- * @args: pointer to malloced array
+ * _strtok - tokenize a string
+ * @str: string
  * @delim: delimeter
+ *
+ * Return: pointer to token
  */
-void _strtok(char *buf, char **args, char *delim)
+char *_strtok(char *str, char delim)
 {
-	int bufsize = MAXLIST;
-	char *token;
-	int index = 0;
+	static char *input;
+	int len = _strlen(str) + 1, i = 0;
+	char *result;
 
-	token = strtok(buf, delim);
-	while (token)
+	if (str != NULL)
+		input = str;
+	if (input == NULL)
+		return (NULL);
+
+	len = _strlen(input) + 1;
+	result = malloc(sizeof(char) * len);
+	if (!result)
+		return (NULL);
+
+	for (; input[i] != '\0'; i++)
 	{
-		args[index] = _strdup(token);
-		index++;
-
-		if (index >= bufsize)
+		if (input[i] != delim)
+			result[i] = input[i];
+		else
 		{
-			bufsize += MAXLIST;
-			args = realloc(args, bufsize);
-			if (!args)
-			{
-				perror("allocation error");
-				exit(EXIT_FAILURE);
-			}
+			result[i] = '\0';
+			input = input + i + 1;
+			return (result);
 		}
-		token = strtok(NULL, delim);
 	}
-	args[index] = NULL;
-}
+	result[i] = '\0';
+	input = NULL;
 
+	return (result);
+}
