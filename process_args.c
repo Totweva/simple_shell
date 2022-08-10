@@ -26,7 +26,11 @@ int process_args(char *buf, char **args, char delim)
 		if (index >= bufsize)
 		{
 			/* bufsize += MAXLIST; */
+<<<<<<< HEAD
 			args = realloc(args, bufsize + MAXLIST);
+=======
+			args = _realloc(args, bufsize, bufsize + MAXLIST);
+>>>>>>> d70535109f294b76bdd8646d3d18ebfc018ddf2e
 			if (!args)
 			{
 				perror("allocation error");
