@@ -2,33 +2,24 @@
 #define MAIN_H
 
 #include <fcntl.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <sys/stat.h>
 #include <signal.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdio.h>
 
-#define UNUSED(x) (void)(x)
 #define END_OF_FILE -2
 #define EXIT -3
 
+/* Global environemnt */
 extern char **environ;
-char *prog_name;
+/* Global program name */
+char *name;
+/* Global history counter */
 int hist;
-
-/**
- * struct Builtins - Struct for defining builtin commands
- * @name: Name of built in command
- * @f: Function pointer to builtin command's function
- */
-typedef struct Builtins
-{
-	char *name;
-	int (*f)(char **argv, char **front);
-} builtin_t;
 
 /**
  * struct list_s - A new struct type defining a linked list.
@@ -40,6 +31,17 @@ typedef struct list_s
 	char *dir;
 	struct list_s *next;
 } list_t;
+
+/**
+ * struct builtin_s - A new struct type defining builtin commands.
+ * @name: The name of the builtin command.
+ * @f: A function pointer to the builtin command's function.
+ */
+typedef struct builtin_s
+{
+	char *name;
+	int (*f)(char **argv, char **front);
+} builtin_t;
 
 /**
  * struct alias_s - A new struct defining aliases.
@@ -54,8 +56,10 @@ typedef struct alias_s
 	struct alias_s *next;
 } alias_t;
 
+/* Global aliases linked list */
 alias_t *aliases;
 
+/* Main Helpers */
 ssize_t _getline(char **lineptr, size_t *n, FILE *stream);
 void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
 char **_strtok(char *line, char *delim);
@@ -65,6 +69,7 @@ int execute(char **args, char **front);
 void free_list(list_t *head);
 char *_itoa(int num);
 
+/* Input Helpers */
 void handle_line(char **line, ssize_t read);
 void variable_replacement(char **args, int *exe_ret);
 char *get_args(char *line, int *exe_ret);
@@ -87,13 +92,13 @@ int _strncmp(const char *s1, const char *s2, size_t n);
 
 /* Builtins */
 int (*get_builtin(char *command))(char **args, char **front);
-int builtn_exit(char **args, char **front);
-int builtn_env(char **args, char __attribute__((__unused__)) **front);
-int builtn_setenv(char **args, char __attribute__((__unused__)) **front);
-int builtn_unsetenv(char **args, char __attribute__((__unused__)) **front);
-int builtn_cd(char **args, char __attribute__((__unused__)) **front);
-int builtn_alias(char **args, char __attribute__((__unused__)) **front);
-int builtn_help(char **args, char __attribute__((__unused__)) **front);
+int shellby_exit(char **args, char **front);
+int shellby_env(char **args, char __attribute__((__unused__)) **front);
+int shellby_setenv(char **args, char __attribute__((__unused__)) **front);
+int shellby_unsetenv(char **args, char __attribute__((__unused__)) **front);
+int shellby_cd(char **args, char __attribute__((__unused__)) **front);
+int shellby_alias(char **args, char __attribute__((__unused__)) **front);
+int shellby_help(char **args, char __attribute__((__unused__)) **front);
 
 /* Builtin Helpers */
 char **_copyenv(void);
@@ -101,7 +106,7 @@ void free_env(void);
 char **_getenv(const char *var);
 
 /* Error Handling */
-int raise_error(char **args, int err);
+int create_error(char **args, int err);
 char *error_env(char **args);
 char *error_1(char **args);
 char *error_2_exit(char **args);
@@ -127,5 +132,4 @@ void help_unsetenv(void);
 void help_history(void);
 
 int proc_file_commands(char *file_path, int *exe_ret);
-
 #endif /* MAIN_H */

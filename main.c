@@ -1,14 +1,17 @@
 #include "main.h"
 
+void sig_handler(int sig);
+int execute(char **args, char **front);
+
 /**
  * sig_handler - Prints a new prompt upon a signal.
- * @sig: signal.
+ * @sig: The signal.
  */
 void sig_handler(int sig)
 {
 	char *new_prompt = "\n$ ";
 
-	UNUSED(sig);
+	(void)sig;
 	signal(SIGINT, sig_handler);
 	write(STDIN_FILENO, new_prompt, 3);
 }
@@ -36,9 +39,9 @@ int execute(char **args, char **front)
 	if (!command || (access(command, F_OK) == -1))
 	{
 		if (errno == EACCES)
-			ret = (raise_error(args, 126));
+			ret = (create_error(args, 126));
 		else
-			ret = (raise_error(args, 127));
+			ret = (create_error(args, 127));
 	}
 	else
 	{
@@ -54,7 +57,7 @@ int execute(char **args, char **front)
 		{
 			execve(command, args, environ);
 			if (errno == EACCES)
-				ret = (raise_error(args, 126));
+				ret = (create_error(args, 126));
 			free_env();
 			free_args(args, front);
 			free_alias_list(aliases);
@@ -72,8 +75,8 @@ int execute(char **args, char **front)
 }
 
 /**
- * main - Runs a simple UNIX shell.
- * @argc: number of arguments.
+ * main - Runs a simple UNIX command interpreter.
+ * @argc: The number of arguments supplied to the program.
  * @argv: An array of pointers to the arguments.
  *
  * Return: The return value of the last executed command.
@@ -84,7 +87,7 @@ int main(int argc, char *argv[])
 	int *exe_ret = &retn;
 	char *prompt = "$ ", *new_line = "\n";
 
-	prog_name = argv[0];
+	name = argv[0];
 	hist = 1;
 	aliases = NULL;
 	signal(SIGINT, sig_handler);
@@ -129,4 +132,3 @@ int main(int argc, char *argv[])
 	free_alias_list(aliases);
 	return (*exe_ret);
 }
-

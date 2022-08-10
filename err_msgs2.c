@@ -1,5 +1,8 @@
 #include "main.h"
 
+char *error_126(char **args);
+char *error_127(char **args);
+
 /**
  * error_126 - Creates an error message for permission denied failures.
  * @args: An array of arguments passed to the command.
@@ -15,7 +18,7 @@ char *error_126(char **args)
 	if (!hist_str)
 		return (NULL);
 
-	len = _strlen(prog_name) + _strlen(hist_str) + _strlen(args[0]) + 24;
+	len = _strlen(name) + _strlen(hist_str) + _strlen(args[0]) + 24;
 	error = malloc(sizeof(char) * (len + 1));
 	if (!error)
 	{
@@ -23,7 +26,7 @@ char *error_126(char **args)
 		return (NULL);
 	}
 
-	_strcpy(error, prog_name);
+	_strcpy(error, name);
 	_strcat(error, ": ");
 	_strcat(error, hist_str);
 	_strcat(error, ": ");
@@ -49,7 +52,7 @@ char *error_127(char **args)
 	if (!hist_str)
 		return (NULL);
 
-	len = _strlen(prog_name) + _strlen(hist_str) + _strlen(args[0]) + 16;
+	len = _strlen(name) + _strlen(hist_str) + _strlen(args[0]) + 16;
 	error = malloc(sizeof(char) * (len + 1));
 	if (!error)
 	{
@@ -57,7 +60,7 @@ char *error_127(char **args)
 		return (NULL);
 	}
 
-	_strcpy(error, prog_name);
+	_strcpy(error, name);
 	_strcat(error, ": ");
 	_strcat(error, hist_str);
 	_strcat(error, ": ");

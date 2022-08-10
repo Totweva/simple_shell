@@ -1,8 +1,13 @@
 #include "main.h"
 
+int (*get_builtin(char *command))(char **args, char **front);
+int shellby_exit(char **args, char **front);
+int shellby_cd(char **args, char __attribute__((__unused__)) **front);
+int shellby_help(char **args, char __attribute__((__unused__)) **front);
+
 /**
  * get_builtin - Matches a command with a corresponding
- *               builtn builtin function.
+ *               shellby builtin function.
  * @command: The command to match.
  *
  * Return: A function pointer to the corresponding builtin.
@@ -10,13 +15,13 @@
 int (*get_builtin(char *command))(char **args, char **front)
 {
 	builtin_t funcs[] = {
-		{ "exit", builtn_exit },
-		{ "env", builtn_env },
-		{ "setenv", builtn_setenv },
-		{ "unsetenv", builtn_unsetenv },
-		{ "cd", builtn_cd },
-		{ "alias", builtn_alias },
-		{ "help", builtn_help },
+		{ "exit", shellby_exit },
+		{ "env", shellby_env },
+		{ "setenv", shellby_setenv },
+		{ "unsetenv", shellby_unsetenv },
+		{ "cd", shellby_cd },
+		{ "alias", shellby_alias },
+		{ "help", shellby_help },
 		{ NULL, NULL }
 	};
 	int i;
@@ -30,7 +35,8 @@ int (*get_builtin(char *command))(char **args, char **front)
 }
 
 /**
- * builtn_exit - Causes normal process termination.
+ * shellby_exit - Causes normal process termination
+ *                for the shellby shell.
  * @args: An array of arguments containing the exit value.
  * @front: A double pointer to the beginning of args.
  *
@@ -40,7 +46,7 @@ int (*get_builtin(char *command))(char **args, char **front)
  *
  * Description: Upon returning -3, the program exits back in the main function.
  */
-int builtn_exit(char **args, char **front)
+int shellby_exit(char **args, char **front)
 {
 	int i, len_of_int = 10;
 	unsigned int num = 0, max = 1 << (sizeof(int) * 8 - 1);
@@ -57,7 +63,7 @@ int builtn_exit(char **args, char **front)
 			if (i <= len_of_int && args[0][i] >= '0' && args[0][i] <= '9')
 				num = (num * 10) + (args[0][i] - '0');
 			else
-				return (raise_error(--args, 2));
+				return (create_error(--args, 2));
 		}
 	}
 	else
@@ -65,7 +71,7 @@ int builtn_exit(char **args, char **front)
 		return (-3);
 	}
 	if (num > max - 1)
-		return (raise_error(--args, 2));
+		return (create_error(--args, 2));
 	args -= 1;
 	free_args(args, front);
 	free_env();
@@ -74,7 +80,7 @@ int builtn_exit(char **args, char **front)
 }
 
 /**
- * builtn_cd - Changes the current directory of the process.
+ * shellby_cd - Changes the current directory of the shellby process.
  * @args: An array of arguments.
  * @front: A double pointer to the beginning of args.
  *
@@ -82,7 +88,7 @@ int builtn_exit(char **args, char **front)
  *         If an error occurs - -1.
  *         Otherwise - 0.
  */
-int builtn_cd(char **args, char __attribute__((__unused__)) **front)
+int shellby_cd(char **args, char __attribute__((__unused__)) **front)
 {
 	char **dir_info, *new_line = "\n";
 	char *oldpwd = NULL, *pwd = NULL;
@@ -105,7 +111,7 @@ int builtn_cd(char **args, char __attribute__((__unused__)) **front)
 			else
 			{
 				free(oldpwd);
-				return (raise_error(args, 2));
+				return (create_error(args, 2));
 			}
 		}
 		else
@@ -116,7 +122,7 @@ int builtn_cd(char **args, char __attribute__((__unused__)) **front)
 			else
 			{
 				free(oldpwd);
-				return (raise_error(args, 2));
+				return (create_error(args, 2));
 			}
 		}
 	}
@@ -136,12 +142,12 @@ int builtn_cd(char **args, char __attribute__((__unused__)) **front)
 
 	dir_info[0] = "OLDPWD";
 	dir_info[1] = oldpwd;
-	if (builtn_setenv(dir_info, dir_info) == -1)
+	if (shellby_setenv(dir_info, dir_info) == -1)
 		return (-1);
 
 	dir_info[0] = "PWD";
 	dir_info[1] = pwd;
-	if (builtn_setenv(dir_info, dir_info) == -1)
+	if (shellby_setenv(dir_info, dir_info) == -1)
 		return (-1);
 	if (args[0] && args[0][0] == '-' && args[0][1] != '-')
 	{
@@ -155,14 +161,14 @@ int builtn_cd(char **args, char __attribute__((__unused__)) **front)
 }
 
 /**
- * builtn_help - Displays information about builtn builtin commands.
+ * shellby_help - Displays information about shellby builtin commands.
  * @args: An array of arguments.
  * @front: A pointer to the beginning of args.
  *
  * Return: If an error occurs - -1.
  *         Otherwise - 0.
  */
-int builtn_help(char **args, char __attribute__((__unused__)) **front)
+int shellby_help(char **args, char __attribute__((__unused__)) **front)
 {
 	if (!args[0])
 		help_all();
@@ -181,7 +187,7 @@ int builtn_help(char **args, char __attribute__((__unused__)) **front)
 	else if (_strcmp(args[0], "help") == 0)
 		help_help();
 	else
-		write(STDERR_FILENO, prog_name, _strlen(prog_name));
+		write(STDERR_FILENO, name, _strlen(name));
 
 	return (0);
 }

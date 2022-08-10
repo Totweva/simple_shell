@@ -1,5 +1,11 @@
 #include "main.h"
 
+char *get_args(char *line, int *exe_ret);
+int call_args(char **args, char **front, int *exe_ret);
+int run_args(char **args, char **front, int *exe_ret);
+int handle_args(int *exe_ret);
+int check_args(char **args);
+
 /**
  * get_args - Gets a command from standard input.
  * @line: A buffer to store the command.
@@ -193,10 +199,10 @@ int check_args(char **args)
 		if (cur[0] == ';' || cur[0] == '&' || cur[0] == '|')
 		{
 			if (i == 0 || cur[1] == ';')
-				return (raise_error(&args[i], 2));
+				return (create_error(&args[i], 2));
 			nex = args[i + 1];
 			if (nex && (nex[0] == ';' || nex[0] == '&' || nex[0] == '|'))
-				return (raise_error(&args[i + 1], 2));
+				return (create_error(&args[i + 1], 2));
 		}
 	}
 	return (0);

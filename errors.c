@@ -1,45 +1,49 @@
 #include "main.h"
 
+int num_len(int num);
+char *_itoa(int num);
+int create_error(char **args, int err);
+
 /**
- * num_len - number of digits in a number
- * @num: Number
+ * num_len - Counts the digit length of a number.
+ * @num: The number to measure.
  *
- * Retur: lenght
+ * Return: The digit length.
  */
 int num_len(int num)
 {
-	unsigned int _num;
+	unsigned int num1;
 	int len = 1;
 
-	/* check if number is negetive */
 	if (num < 0)
 	{
-		_num = num * -1;
 		len++;
+		num1 = num * -1;
 	}
 	else
-		_num = num;
-
-	while (_num > 9)
 	{
-		_num /= 10;
+		num1 = num;
+	}
+	while (num1 > 9)
+	{
 		len++;
+		num1 /= 10;
 	}
 
 	return (len);
 }
 
 /**
- * _itoa - Convert integer to string
- * @num: Number
+ * _itoa - Converts an integer to a string.
+ * @num: The integer.
  *
- * Return: string representation of number
+ * Return: The converted string.
  */
 char *_itoa(int num)
 {
 	char *buffer;
-	unsigned int _num;
 	int len = num_len(num);
+	unsigned int num1;
 
 	buffer = malloc(sizeof(char) * (len + 1));
 	if (!buffer)
@@ -49,63 +53,63 @@ char *_itoa(int num)
 
 	if (num < 0)
 	{
-		_num = num * -1;
+		num1 = num * -1;
 		buffer[0] = '-';
 	}
 	else
-		_num = num;
+	{
+		num1 = num;
+	}
 
-	/* 
-	 * write number to string backward starting before the
-	 * terminating character
-	 */
 	len--;
 	do {
-		buffer[len] = (_num % 10) + '0';
-		_num /= 10;
+		buffer[len] = (num1 % 10) + '0';
+		num1 /= 10;
 		len--;
-	} while (num > 0);
+	} while (num1 > 0);
 
 	return (buffer);
 }
 
+
 /**
- * raise_error - writes a custom error message to stderr
- * @args: Array of arguments
- * @err: error value
+ * create_error - Writes a custom error message to stderr.
+ * @args: An array of arguments.
+ * @err: The error value.
  *
- * Return: error value
+ * Return: The error value.
  */
-int raise_error(char **args, int err)
+int create_error(char **args, int err)
 {
 	char *error;
 
 	switch (err)
 	{
-		case -1:
-			error = error_env(args);
-			break;
-		case 1:
-			error = error_1(args);
-			break;
-		case 2:
-			if (*(args[0]) == 'e')
-				error = error_2_exit(++args);
-			else if (args[0][0] == ';' || args[0][0] == '&' || args[0][0] ==     '|')
-				error = error_2_syntax(args);
-			else
-				error = error_2_cd(args);
-			break;
-		case 126:
-			error = error_126(args);
-			break;
-		case 127:
-			error =error_127(args);
+	case -1:
+		error = error_env(args);
+		break;
+	case 1:
+		error = error_1(args);
+		break;
+	case 2:
+		if (*(args[0]) == 'e')
+			error = error_2_exit(++args);
+		else if (args[0][0] == ';' || args[0][0] == '&' || args[0][0] == '|')
+			error = error_2_syntax(args);
+		else
+			error = error_2_cd(args);
+		break;
+	case 126:
+		error = error_126(args);
+		break;
+	case 127:
+		error = error_127(args);
+		break;
 	}
 	write(STDERR_FILENO, error, _strlen(error));
 
 	if (error)
 		free(error);
 	return (err);
-}
 
+}
