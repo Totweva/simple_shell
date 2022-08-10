@@ -8,7 +8,7 @@
  */
 char *get_exec_path(char **args)
 {
-	char **path = NULL, *delim = ":", *path_value;
+	char **path = NULL, delim = ':', *path_value;
 	size_t index = 0;
 	char *cwd = getcwd(NULL, 0);
 	struct stat sb;
@@ -18,7 +18,7 @@ char *get_exec_path(char **args)
 	if (!dirs || !path)
 		return (NULL);
 	path_value = get_env_value(*path);
-	_strtok(path_value, dirs, delim);
+	process_args(path_value, dirs, delim);
 	while (dirs[index])
 	{
 		chdir(dirs[index]);
@@ -31,6 +31,6 @@ char *get_exec_path(char **args)
 		index++;
 	}
 	chdir(cwd);
-	free(dirs);
+	free_args(dirs);
 	return (args[0]);
 }

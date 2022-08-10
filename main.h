@@ -51,9 +51,10 @@ char *get_env_value(char *str);
 /* helper functions */
 void free_args(char **args);
 
+int process_args(char *buf, char **args, char delim);
 ssize_t _getline(char **lineptr, size_t *n, FILE *stream);
 void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
-char **_strtok(char *line, char *delim);
+char *_strtok(char *str, char delim);
 char *get_exec_path(char **args);
 void handle_exec(char **args);
 void prompt(void);
